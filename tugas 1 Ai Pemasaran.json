@@ -1,0 +1,217 @@
+{
+  "name": "tugas 1 Ai Pemasaran",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "Pembuatan Invoice Otomatis",
+        "formDescription": "Silakan isi data untuk membuat invoice",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Nama Klien",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Jam Kerja",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Rate",
+              "fieldName": "Rate",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Email Klien",
+              "fieldType": "email",
+              "requiredField": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.5,
+      "position": [
+        688,
+        480
+      ],
+      "name": "On form submission1",
+      "id": "4b801fab-2d71-485f-a411-58d1435232c6",
+      "webhookId": "83413ffe-1143-491e-8556-14ed6772f74e"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a288f1d9-fd11-4072-872d-54f3688f1d28",
+              "name": "Total Biaya",
+              "value": "={{ (Number($json[\"Jam Kerja\"]) * Number($json[\"Rate\"].replace(/\\./g, \"\"))).toLocaleString(\"id-ID\") }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        912,
+        480
+      ],
+      "name": "Edit Fields",
+      "id": "3673cfe4-e210-41d5-af60-5eefe6ea746f"
+    },
+    {
+      "parameters": {
+        "html": "<!DOCTYPE html>\n<html lang=\"id\">\n<head>\n  <meta charset=\"UTF-8\">\n  <title>Invoice</title>\n  <style>\n    body { font-family: Arial, sans-serif; background: #f4f6f8; padding: 40px; color: #333; }\n    .invoice-wrapper { max-width: 800px; margin: auto; background: #fff; border-radius: 8px; padding: 40px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }\n    .invoice-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #eaeaea; padding-bottom: 20px; margin-bottom: 30px; }\n    .section { margin-bottom: 30px; }\n    .section-title { font-size: 14px; font-weight: bold; color: #6b7280; text-transform: uppercase; margin-bottom: 8px; }\n    table { width: 100%; border-collapse: collapse; }\n    table th { background: #f9fafb; border-bottom: 2px solid #e5e7eb; padding: 12px; text-align: left; }\n    table td { padding: 12px; border-bottom: 1px solid #e5e7eb; }\n    .total-box { margin-top: 30px; text-align: right; }\n  </style>\n</head>\n<body>\n  <div class=\"invoice-wrapper\">\n    <div class=\"invoice-header\">\n      <h1>INVOICE</h1>\n      <div>\n        <div>Tanggal: {{ $now.format('dd/MM/yyyy') }}</div>\n        <div>Invoice #: INV-{{ $execution.id }}</div>\n      </div>\n    </div>\n    <div class=\"section\">\n      <div class=\"section-title\">Ditagihkan Kepada</div>\n      <p><strong>{{ $('On form submission1').item.json['Nama Klien'] }}</strong></p>\n      <p>{{ $('On form submission1').item.json['Email Klien'] }}</p>\n    </div>\n    <div class=\"section\">\n      <table>\n        <thead>\n          <tr>\n            <th>Deskripsi</th>\n            <th>Jam</th>\n            <th>Rate</th>\n            <th>Subtotal</th>\n          </tr>\n        </thead>\n        <tbody>\n          <tr>\n            <td>Jasa Pekerjaan / Konsultasi</td>\n            <td>{{ $('On form submission1').item.json['Jam Kerja'] }}</td>\n            <td>{{ $('On form submission1').item.json['Rate'] }}</td>\n            <td>Rp {{ $json['Total Biaya'] }}</td>\n          </tr>\n        </tbody>\n      </table>\n    </div>\n    <div class=\"total-box\">\n      <strong>Total Tagihan: Rp {{ $json['Total Biaya'] }}</strong>\n    </div>\n  </div>\n</body>\n</html>"
+      },
+      "type": "n8n-nodes-base.html",
+      "typeVersion": 1.2,
+      "position": [
+        1120,
+        480
+      ],
+      "name": "HTML",
+      "id": "f1715087-7c04-4b7a-b9ba-589014b3bbd7"
+    },
+    {
+      "parameters": {
+        "html_content": "={{ $json.html }}"
+      },
+      "type": "n8n-nodes-htmlcsstopdf.htmlcsstopdf",
+      "typeVersion": 1,
+      "position": [
+        1312,
+        480
+      ],
+      "name": "Convert HTML to PDF1",
+      "id": "da98cc4a-931a-482b-831d-348ffb5ff7be",
+      "credentials": {
+        "htmlcsstopdfApi": {
+          "id": "sB8MZTL2k4Oedot4",
+          "name": "HTML to PDF account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.pdf_url }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1520,
+        480
+      ],
+      "name": "HTTP Request1",
+      "id": "19c2c040-ca65-467c-915f-2cbd92d663dd"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('On form submission1').item.json['Email Klien'] }}",
+        "subject": "=Invoice dari Vedera Company untuk {{ $('On form submission1').item.json['Nama Klien'] }}",
+        "message": "=<p>Yth. <strong>{{ $('On form submission1').item.json['Nama Klien'] }}</strong>,</p>\n<p>Terima kasih atas kepercayaan Anda. Berikut adalah ringkasan tagihan Anda:</p>\n<ul>\n    <li><strong>Total Jam Kerja:</strong> {{ $('On form submission1').item.json['Jam Kerja'] }} jam</li>\n    <li><strong>Total Tagihan:</strong> Rp {{ $('Edit Fields').item.json['Total Biaya'] }}</li>\n</ul>\n<p>Detail lengkap silakan cek file PDF terlampir.</p>",
+        "options": {
+          "attachmentsUi": {
+            "attachmentsBinary": [
+              {}
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1728,
+        480
+      ],
+      "name": "Send a message1",
+      "id": "dfe1eafe-167f-48cd-a814-212159ca4941",
+      "webhookId": "0b1e0d78-312a-4828-bb35-4c4d4a74736a",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "lI0F9mJw4VCM46Iv",
+          "name": "Gmail account 2"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "On form submission1": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "HTML",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTML": {
+      "main": [
+        [
+          {
+            "node": "Convert HTML to PDF1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert HTML to PDF1": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request1": {
+      "main": [
+        [
+          {
+            "node": "Send a message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "7ef4473a-772e-4e68-b448-f1c4ae3538cf",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "a8029a7adbdc0dbd60336a80f6905c6c6343c6a279cd22aaad11890dcf0bf2ab"
+  },
+  "id": "XpDyosgbn5lWACCw",
+  "tags": []
+}
