@@ -1,0 +1,425 @@
+{
+  "name": "Tugas 4 Ai Keuangan",
+  "nodes": [
+    {
+      "parameters": {
+        "jsCode": "return items.map(item => {\n  const d = item.json;\n\n  const text = `📊 LAPORAN MATCHED\\n\\n📅 Tanggal: ${d.tanggal}\\n💰 Nominal: Rp ${Number(d.nominal || 0).toLocaleString('id-ID')}\\n\\n✅ Status: ${d.status || '-'}\\n📌 Ket: ${d.pesan || '-'}\\n\\n🔍 Ref Internal: ${d.ref_internal || '-'}\\n🏦 Ref Bank: ${d.ref_bank || '-'}\\n\\nℹ️ Desc: ${d.deskripsi || '-'}`;\n\n  return { json: { text } };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1600,
+        592
+      ],
+      "name": "Summary TRUE",
+      "id": "365aa73b-8e3a-449b-8602-def4d357f572"
+    },
+    {
+      "parameters": {
+        "chatId": "6694078886",
+        "text": "={{ $json.text }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [
+        1760,
+        592
+      ],
+      "name": "Send Telegram TRUE",
+      "id": "a0110cc5-fdd2-4362-973a-9bae056385a9",
+      "webhookId": "70075995-bed0-4e63-af11-dc153962b3d4",
+      "credentials": {
+        "telegramApi": {
+          "id": "7F3QHpvmxcywTZss",
+          "name": "Telegram account 6"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": 3,
+        "unit": "seconds"
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1,
+      "position": [
+        1504,
+        768
+      ],
+      "name": "Delay FALSE",
+      "id": "cb94a2e5-b1a3-47c8-94e4-1c8c604c6ad4",
+      "webhookId": "3542ec68-68dc-4fc1-992b-5ef75be53be3"
+    },
+    {
+      "parameters": {
+        "jsCode": "return items.map(item => {\n  const d = item.json;\n\n  const text = `📊 LAPORAN SELISIH KEUANGAN\\n\\n📅 Tanggal: ${d.tanggal}\\n💰 Nominal: Rp ${Number(d.nominal || 0).toLocaleString('id-ID')}\\n\\n⚠️ Status: ${d.status || '-'}\\n📌 Ket: ${d.pesan || '-'}\\n\\n🔍 Ref Internal: ${d.ref_internal || '-'}\\n🏦 Ref Bank: ${d.ref_bank || '-'}\\n\\nℹ️ Desc: ${d.deskripsi || '-'}`;\n\n  return { json: { text } };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1680,
+        768
+      ],
+      "name": "Summary FALSE",
+      "id": "9bf1e880-e0f2-49e9-8ceb-897112289e2a"
+    },
+    {
+      "parameters": {
+        "chatId": "6694078886",
+        "text": "={{ $json.text }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [
+        1840,
+        768
+      ],
+      "name": "Send Telegram FALSE",
+      "id": "5ced099e-cc35-4232-af92-920ee269217d",
+      "webhookId": "afafebe5-164c-4c1f-8ef3-2dabdba891ad",
+      "credentials": {
+        "telegramApi": {
+          "id": "7F3QHpvmxcywTZss",
+          "name": "Telegram account 6"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1eA2-wBY3ipMtkvuYehbsJ_H5DnLB6OXToSMUcr0TDjI",
+          "mode": "list",
+          "cachedResultName": "Dummy Rekonsiliasi",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1eA2-wBY3ipMtkvuYehbsJ_H5DnLB6OXToSMUcr0TDjI/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1eA2-wBY3ipMtkvuYehbsJ_H5DnLB6OXToSMUcr0TDjI/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4,
+      "position": [
+        704,
+        592
+      ],
+      "name": "Get Internal Data1",
+      "id": "fdd200b3-5ea8-475c-9cd9-c782f2aecc44",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "Zdtg531UPVR2m1Em",
+          "name": "Google Sheets account 5"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "1_lpME3F4duw-gKrw-LjNbmdRvkocXBOK",
+          "mode": "list",
+          "cachedResultName": "Dummy Rekonsiliasi - Sheet2.csv",
+          "cachedResultUrl": "https://drive.google.com/file/d/1_lpME3F4duw-gKrw-LjNbmdRvkocXBOK/view?usp=drivesdk"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        704,
+        816
+      ],
+      "name": "Download Bank CSV1",
+      "id": "f9474bbc-34e9-45da-8905-109d82f9494c",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "Tv8MLiOyC5qsmOsm",
+          "name": "Google Drive account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {
+          "headerRow": true
+        }
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        912,
+        816
+      ],
+      "name": "Parse CSV1",
+      "id": "fad93cb5-89eb-4f5e-a405-4b0e5175da92"
+    },
+    {
+      "parameters": {
+        "jsCode": "return items.map(item => {\n  let tgl = item.json[\"Tanggal Transaksi\"];\n  let nominal = item.json[\"Jumlah (IDR)\"];\n\n  let parts = String(tgl || '').split('/');\n  if (parts.length !== 3) return null;\n\n  let cleanDate = `${parts[2]}-${parts[1]}-${parts[0]}`;\n  let cleanAmount = Number(String(nominal).replace(/\\D/g,'')) || 0;\n\n  return {\n    json: {\n      source: 'INTERNAL',\n      id_referensi: item.json[\"ID Referensi\"] || '-',\n      tanggal: cleanDate,\n      nominal: cleanAmount,\n      match_key: cleanDate + '_' + cleanAmount,\n      deskripsi: item.json[\"Deskripsi\"] || '-',\n      status_internal: item.json[\"Status\"] || '-'\n    }\n  };\n}).filter(Boolean);"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        880,
+        592
+      ],
+      "name": "Format Internal1",
+      "id": "096d4b48-5f97-49d5-a9bd-838e9bc5f465"
+    },
+    {
+      "parameters": {
+        "jsCode": "return items.map(item => {\n  let tgl = item.json[\"Tanggal Bank\"];\n  let nominal = item.json[\"Jumlah (IDR)\"];\n\n  let parts = String(tgl || '').split('/');\n  if (parts.length !== 3) return null;\n\n  let cleanDate = `${parts[2]}-${parts[1]}-${parts[0]}`;\n  let cleanAmount = Number(String(nominal).replace(/\\D/g,'')) || 0;\n\n  return {\n    json: {\n      source: 'BANK',\n      id_referensi: item.json[\"ID Referensi\"] || '-',\n      tanggal: cleanDate,\n      nominal: cleanAmount,\n      match_key: cleanDate + '_' + cleanAmount,\n      deskripsi: item.json[\"Deskripsi Transaksi\"] || '-',\n      status_bank: item.json[\"Status\"] || '-'\n    }\n  };\n}).filter(Boolean);"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1104,
+        816
+      ],
+      "name": "Format Bank1",
+      "id": "4bb1cfff-0ff9-4ddc-ae96-c01b718c2d66"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [
+        1072,
+        608
+      ],
+      "name": "Merge Data1",
+      "id": "337f10f1-2b85-437a-936b-a81f125e7cd5"
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\nconst grouped = {};\n\nfor (const item of items) {\n  const key = item.json.match_key;\n  if (!grouped[key]) grouped[key] = [];\n  grouped[key].push(item.json);\n}\n\nlet results = [];\n\nfor (const key in grouped) {\n  const group = grouped[key];\n\n  const internal = group.find(x => x.source === 'INTERNAL');\n  const bank = group.find(x => x.source === 'BANK');\n\n  let status = '';\n  let pesan = '';\n\n  if (internal && bank) {\n    status = 'MATCHED';\n    pesan = '✅ Cocok';\n  } else if (internal && !bank) {\n    status = 'UNRECORDED BANK';\n    pesan = '⚠️ Tidak ada di Bank';\n  } else if (!internal && bank) {\n    status = 'UNRECORDED INTERNAL';\n    pesan = '⚠️ Tidak ada di Internal';\n  }\n\n  const ref = internal || bank;\n\n  results.push({\n    json: {\n      type: status === 'MATCHED' ? 'TRUE' : 'FALSE',\n      status,\n      pesan,\n      tanggal: ref?.tanggal || '-',\n      nominal: ref?.nominal || 0,\n      ref_internal: internal?.id_referensi || '-',\n      ref_bank: bank?.id_referensi || bank?.deskripsi || '-',\n      deskripsi: ref?.deskripsi || '-'\n    }\n  });\n}\n\nreturn results;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1216,
+        608
+      ],
+      "name": "Rekonsiliasi1",
+      "id": "a6a067b1-5338-4b42-b7e8-0b7d3fdf7d7e"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "conditions": [
+            {
+              "leftValue": "={{ $json.type }}",
+              "rightValue": "TRUE",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and",
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          }
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        1376,
+        608
+      ],
+      "name": "IF Status1",
+      "id": "cb0b07ce-f85b-4a97-9ff9-9dccf8bf2f87"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 7
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        480,
+        720
+      ],
+      "id": "f36202f1-8240-4ff2-8a84-c41af57182b2",
+      "name": "Schedule Trigger"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Summary TRUE": {
+      "main": [
+        [
+          {
+            "node": "Send Telegram TRUE",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delay FALSE": {
+      "main": [
+        [
+          {
+            "node": "Summary FALSE",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Summary FALSE": {
+      "main": [
+        [
+          {
+            "node": "Send Telegram FALSE",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Internal Data1": {
+      "main": [
+        [
+          {
+            "node": "Format Internal1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download Bank CSV1": {
+      "main": [
+        [
+          {
+            "node": "Parse CSV1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse CSV1": {
+      "main": [
+        [
+          {
+            "node": "Format Bank1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Internal1": {
+      "main": [
+        [
+          {
+            "node": "Merge Data1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Bank1": {
+      "main": [
+        [
+          {
+            "node": "Merge Data1",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge Data1": {
+      "main": [
+        [
+          {
+            "node": "Rekonsiliasi1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Rekonsiliasi1": {
+      "main": [
+        [
+          {
+            "node": "IF Status1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF Status1": {
+      "main": [
+        [
+          {
+            "node": "Summary TRUE",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Delay FALSE",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get Internal Data1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Download Bank CSV1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "e72eb742-3d64-4d43-babc-5ed6c272f685",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "a8029a7adbdc0dbd60336a80f6905c6c6343c6a279cd22aaad11890dcf0bf2ab"
+  },
+  "id": "XA6iWHHGgYq5P7po",
+  "tags": []
+}
