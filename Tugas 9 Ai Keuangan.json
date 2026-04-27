@@ -1,0 +1,293 @@
+{
+  "name": "Tugas 9 Ai Keuangan",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 9
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -416,
+        160
+      ],
+      "id": "6380e1bd-50fa-4b72-b9c9-0b9b2855738d",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "362148e1-283d-48a1-94ad-302b05e64061",
+              "name": "symbols",
+              "value": "[\"AAPL\",\"TSLA\",\"MSFT\"]",
+              "type": "array"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -208,
+        160
+      ],
+      "id": "f8576230-ce87-4d14-9140-4ea956f0b914",
+      "name": "Watchlist"
+    },
+    {
+      "parameters": {
+        "url": "=https://query1.finance.yahoo.com/v8/finance/chart/{{$json.symbols[0]}}?range=6mo&interval=1d",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        80,
+        -64
+      ],
+      "id": "1f27005a-00d6-47f3-9a7d-cf99e91ee3ef",
+      "name": "AAPL"
+    },
+    {
+      "parameters": {
+        "url": "=https://query1.finance.yahoo.com/v8/finance/chart/{{$json.symbols[1]}}?range=6mo&interval=1d",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        80,
+        80
+      ],
+      "id": "32fb9329-1fff-4d40-9968-bf0cdfc1bc0a",
+      "name": "TSLA"
+    },
+    {
+      "parameters": {
+        "numberInputs": 4
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        352,
+        112
+      ],
+      "id": "e0f83545-f14b-410d-9bce-5f63728eca96",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "chatId": "6694078886",
+        "text": "=📈 ALERT SAHAM\n\n📌 Symbol: {{$json.symbol}}\n💰 Harga: {{$json.lastPrice}}\n\n📊 MA50: {{$json.ma50.toFixed(2)}}\n📊 MA200: {{$json.ma200.toFixed(2)}}\n\n⚡ RSI: {{$json.rsi14.toFixed(2)}}\n\n🚨 Signal:\n{{$json.signal}}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        800,
+        144
+      ],
+      "id": "18a6ddec-dc66-4554-8be1-cb46962bd1a6",
+      "name": "Send a text message",
+      "webhookId": "65c6d07e-e397-4f50-8cde-0b02ad8110d1",
+      "credentials": {
+        "telegramApi": {
+          "id": "7F3QHpvmxcywTZss",
+          "name": "Telegram account 6"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "https://query1.finance.yahoo.com/v8/finance/chart/BTC-USD?range=1d&interval=5m",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        80,
+        368
+      ],
+      "id": "deec86ca-a83c-46bd-893b-2edcaaa444fb",
+      "name": "BTC"
+    },
+    {
+      "parameters": {
+        "url": "=https://query1.finance.yahoo.com/v8/finance/chart/{{$json.symbols[2]}}?range=6mo&interval=1d",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        80,
+        224
+      ],
+      "id": "c4450d78-b905-4086-919b-8f41cbf6cb5a",
+      "name": "MSFT"
+    },
+    {
+      "parameters": {
+        "jsCode": "function sma(arr, period){\n  const slice = arr.slice(-period);\n  return slice.reduce((a,b)=>a+b,0)/period;\n}\n\nfunction rsi(prices, period=14){\n  let gains = 0;\n  let losses = 0;\n\n  for(let i=prices.length-period; i<prices.length-1; i++){\n    let diff = prices[i+1]-prices[i];\n    if(diff > 0) gains += diff;\n    else losses -= diff;\n  }\n\n  let rs = gains / losses;\n  return 100 - (100/(1+rs));\n}\n\nlet output = [];\n\nfor (item of items){\n\nconst result = item.json.chart.result[0];\nconst closes = result.indicators.quote[0].close.filter(v => v);\n\nconst symbol = result.meta.symbol;\nconst lastPrice = closes[closes.length-1];\n\nconst ma50 = sma(closes,50);\nconst ma200 = sma(closes,200);\nconst rsi14 = rsi(closes,14);\n\nlet signal = \"Netral\";\n\nif(ma50 > ma200) signal = \"Golden Cross BUY\";\nif(ma50 < ma200) signal = \"Death Cross SELL\";\nif(rsi14 < 30) signal = \"RSI Oversold BUY\";\nif(rsi14 > 70) signal = \"RSI Overbought SELL\";\n\noutput.push({\njson:{\nsymbol,\nlastPrice,\nma50,\nma200,\nrsi14,\nsignal\n}\n});\n\n}\n\nreturn output;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        576,
+        144
+      ],
+      "id": "e501ab04-0a0e-4a76-a747-45f2dce25881",
+      "name": "Analyze Signals"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Watchlist",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Watchlist": {
+      "main": [
+        [
+          {
+            "node": "AAPL",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "MSFT",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "TSLA",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "BTC",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AAPL": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "TSLA": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Analyze Signals",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MSFT": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "BTC": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 3
+          }
+        ]
+      ]
+    },
+    "Analyze Signals": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "4b3833c3-4347-4944-b2c8-2455673a0958",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "a8029a7adbdc0dbd60336a80f6905c6c6343c6a279cd22aaad11890dcf0bf2ab"
+  },
+  "id": "MZf2BHcFpaIH0XPO",
+  "tags": []
+}
